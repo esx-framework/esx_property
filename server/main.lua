@@ -279,6 +279,11 @@ ESX.RegisterServerCallback("esx_property:sellProperty", function(source, cb, Pro
     Properties[PropertyId].Keys = {}
     local furn = #(Properties[PropertyId].furniture)
     if Config.WipeFurnitureOnSell then
+      if Config.RefundFurniture then
+        for furniture = 1, #Properties[PropertyId].furniture do
+          xPlayer.addAccountMoney("bank", Properties[PropertyId].furniture[furniture].Price, "Furniture")
+        end
+      end
       Properties[PropertyId].furniture = {}
     end
     if Config.WipeCustomNameOnSell then
