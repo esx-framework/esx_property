@@ -531,6 +531,9 @@ ESX.RegisterServerCallback("esx_property:RemoveAllfurniture", function(source, c
     (Properties[PropertyId].Keys and Properties[PropertyId].Keys[xPlayer.identifier]) then
     for i = 1, #Properties[PropertyId].plysinside do
       for furniture = 1, #Properties[PropertyId].furniture do
+        if Config.RefundFurniture then
+          xPlayer.addAccountMoney("bank", Properties[PropertyId].furniture[furniture].Price, "Furniture")
+        end
         TriggerClientEvent("esx_property:removeFurniture", Properties[PropertyId].plysinside[i], PropertyId, furniture)
       end
     end
@@ -548,6 +551,9 @@ ESX.RegisterServerCallback("esx_property:deleteFurniture", function(source, cb, 
   local Owner = Properties[PropertyId].Owner
   if xPlayer.identifier == Owner or IsPlayerAdmin(source) or (Properties[PropertyId].Keys and Properties[PropertyId].Keys[xPlayer.identifier]) then
     if Properties[PropertyId].furniture[furnitureIndex] then
+      if Config.RefundFurniture then
+        xPlayer.addAccountMoney("bank", Properties[PropertyId].furniture[furnitureIndex].Price, "Furniture")
+      end
       Properties[PropertyId].furniture[furnitureIndex] = nil
       TriggerClientEvent("esx_property:syncFurniture", -1, PropertyId, Properties[PropertyId].furniture)
     end

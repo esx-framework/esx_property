@@ -15,7 +15,7 @@ Config.MaxNameLength = 20 -- Max Name Length for Owned Properties Default: 20
 Config.CanCustomiseInventoryAndWardrobePositions = true -- Allow users to customise inventory and wardrobe positions Default: true
 Config.WipeCustomNameOnSell = true -- Wipe custom name on sell Default: true
 Config.WipeFurnitureOnSell = true -- Wipe custom name on sell Default: true
-
+Config.RefundFurniture = true -- Refund furniture on wipe or removal Default: true
 
 --------------------- Zone Suggested Prices  ---------------------------------
 Config.ZonePriceOptions = {
