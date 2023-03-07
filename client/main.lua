@@ -521,6 +521,9 @@ RegisterCommand("getoffset", function(source)
     local Property = Properties[CurrentId]
     local Interior = GetInteriorValues(Property.Interior)
     print(vector3(Property.Entrance.x, Property.Entrance.y, 2000) - Pcoords)
+    SendNUIMessage({
+      link = tostring(vector3(Property.Entrance.x, Property.Entrance.y, 2000) - Pcoords)
+    })
   end
 end)
 
