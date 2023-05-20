@@ -4,7 +4,7 @@ Core = {}
 --- @param target integer
 --- @param action string
 --- @return boolean
-function Core.HasPermission(target, action)
+function Core:HasPermission(target, action)
     local xPlayer = ESX.GetPlayerFromId(target)
 
     if Config.AdminGroups[xPlayer.group] then

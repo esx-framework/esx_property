@@ -1,10 +1,12 @@
 --- Save properties in database
 --- @param cb function|false
 --- @return boolean
-function Core.SaveProperties(cb)
+function Core:SaveProperties(cb)
     local parameters = {}
+
     local promise = not cb and promise.new()
-    for propertyName, propertyData in pairs(Core.Properties) do
+
+    for propertyName, propertyData in pairs(self.Properties) do
         parameters[#parameters + 1] = {
             propertyName,
             propertyData.label,
@@ -14,6 +16,7 @@ function Core.SaveProperties(cb)
             propertyName
         }
     end
+
     MySQL.prepare('UPDATE properties SET name = ?, label = ?, owner = ?, positions = ? WHERE name = ?', parameters, function(results)
         if promise then promise:resolve(true) end
         if not results then return false end

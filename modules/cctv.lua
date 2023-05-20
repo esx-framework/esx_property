@@ -2,7 +2,7 @@ Core.Modules.CCTV = {}
 
 --- Open CCTV
 --- @param propertyId integer
-function Core.Modules.CCTV(propertyId)
+function Core.Modules.CCTV:OpenCCTV(propertyId)
     local property = Core.Properties[propertyId]
     assert(property, 'Property '..propertyId..' not found')
     if not property.cctv.enabled then return ESX.ShowNotification('CCTV is turned off!') end
@@ -51,7 +51,7 @@ function Core.Modules.CCTV(propertyId)
             HideHudComponentThisFrame(19)
             HideHudAndRadarThisFrame()
   
-            local instructions = Core.Utils.CreateInstuctionScaleform("instructional_buttons")
+            local instructions = Core.Utils:CreateInstuctionScaleform('instructional_buttons')
             DrawScaleformMovieFullscreen(instructions, 255, 255, 255, 255, 0)
 
             local getCameraRot = GetCamRot(cctvCamera, 2)
