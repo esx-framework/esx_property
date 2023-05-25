@@ -7,7 +7,7 @@ PropertyClass = {
 
 function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,garage, data)
     local property = setmetatable({}, PropertyClass)
-  
+
     -- Define Default Values
     property.HouseID = HouseID
     property.Price = Price
@@ -55,11 +55,11 @@ function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,gara
      -- sync property to a single player inside the property, whom will have more info than those outside.
     function property:syncPropertyToInsidePlayer(ply)
         TriggerClientEvent("esx_property:syncPropertyInterally", ply, self.HouseID, {
-             id = self.HouseID,
-                entrance = self.entrance,
-                garage = self.garage.pos,
-                interior = self.interior,
-                furniture = self.furniture.enabled and self.furniture.objects or {}
+            id = self.HouseID,
+            entrance = self.entrance,
+            garage = self.garage.pos,
+            interior = self.interior,
+            furniture = self.furniture.enabled and self.furniture.objects or {}
         })
     end
 
@@ -98,8 +98,7 @@ function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,gara
 
     -- Registers a player as being inside the property
     function property:enter(player)
-        local xPlayer = ESX.GetPlayerFromId(player)
-        self.PlayersInside[#self.PlayersInside +1] = {id = player, name = xPlayer.getName()} -- store the players id and name
+        self.PlayersInside[#self.PlayersInside +1] = {id = player, name = Player(player).state.name} -- store the players id and name
         property:syncPropertyToInsidePlayer(player)
         SetPlayerRoutingBucket(player, self.HouseID)
         Player(player).state:set("CurrentProperty", HouseID, true) -- store the house id as a state bag
@@ -122,11 +121,10 @@ function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,gara
         local isInside = self:GetPlayerInside(player)
         if isInside then 
             table.remove(self.PlayersInside, isInside)
-            local xPlayer = ESX.GetPlayerFromId(player)
             SetPlayerRoutingBucket(player, 0)
             Player(player).state:set("CurrentProperty", false, true)
-            local Ped = GetPlayerPed(player)
-            SetEntityCoords(Ped, self.entrance)
+            local ped = GetPlayerPed(player)
+            SetEntityCoords(ped, self.entrance)
             self:syncPropertyToPlayer(player)
         end
     end
@@ -147,17 +145,17 @@ function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,gara
     -- Property Saving 
    
     function property:save()
-         -------- JSON encoding so it can be stored in the database ------------
         local furniture = json.encode(self.furniture)
         local CCTV = json.encode(self.CCTV)
         local garage = json.encode(self.garage)
         local data = json.encode(self.data)
-        -------------------------------------------------------------------------
+
         MySQL.update('UPDATE properties SET owner = ?, furniture = ?, price = ?, cctv = ?, garage = ?, data = ? WHERE HouseID = ?', {self.Owner, furniture, self.Price, CCTV, garage, data, self.HouseID}, function(affectedRows)
             if affectedRows then
                 print(("[INFO] Sucessfully Saved Property - %s"):format(self.HouseID))
             end
         end)
     end
+
     return property
 end

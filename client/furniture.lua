@@ -13,24 +13,25 @@ use of this source, with or without modification, are permitted provided that th
 ]] 
 
 function SpawnFurniture(furniture)
-	for i=1,#furniture do
-		ESX.Streaming.RequestModel(joaat(furniture[i].model))
-		local pos = vector3(furniture[i].pos.x,furniture[i].pos.y, furniture[i].pos.z)
-		local rot = vector3(furniture[i].rotation.x,furniture[i].rotation.y, furniture[i].rotation.z)
-		local object = CreateObjectNoOffset(joaat(furniture[i].model), pos, false, true, false)
-		if DoesEntityExist(object) then
-			furniture[i].obj = object
-			SpawnedFurniture[#SpawnedFurniture +1] = furniture[i]
-			SetEntityRotation(object, rot)
-			FreezeEntityPosition(object, true)
-			SetEntityAsMissionEntity(object, true, true)
-		end
-		SetModelAsNoLongerNeeded(joaat(furniture[i].model))
+	for i = 1, #furniture do
+		ESX.Streaming.RequestModel(joaat(furniture[i].model), function()
+			local pos = vector3(furniture[i].pos.x,furniture[i].pos.y, furniture[i].pos.z)
+			local rot = vector3(furniture[i].rotation.x,furniture[i].rotation.y, furniture[i].rotation.z)
+			local object = CreateObjectNoOffset(joaat(furniture[i].model), pos, false, true, false)
+			if DoesEntityExist(object) then
+				furniture[i].obj = object
+				SpawnedFurniture[#SpawnedFurniture +1] = furniture[i]
+				SetEntityRotation(object, rot)
+				FreezeEntityPosition(object, true)
+				SetEntityAsMissionEntity(object, true, true)
+			end
+			SetModelAsNoLongerNeeded(joaat(furniture[i].model))
+		end)
 	end
 end
 	
 function RemoveAllFurniture()
-	for i=1,#SpawnedFurniture do
+	for i = 1, #SpawnedFurniture do
 		if DoesEntityExist(SpawnedFurniture[i].obj) then
 			DeleteEntity(SpawnedFurniture[i].obj)
 			table.remove(SpawnedFurniture, i)

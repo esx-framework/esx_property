@@ -32,86 +32,86 @@ RegisterCommand("create", function()
 end)
 
 -- Main loop
-local DrawingUI = {showing = false, text = ""} -- create table for showing TextUI
+local drawingUI = {showing = false, text = ""} -- create table for showing TextUI
 
 CreateThread(function()
 	while true do --continuous loop
-		local Sleep = 1000 -- sleep while inactive
-		local PlayerCoords = GetEntityCoords(ESX.PlayerData.ped) -- get current coords
-		local InProperty = LocalPlayer.state.CurrentProperty -- grab the state bag (set by the server-side) to see if they are inside a properly
-		local Near = false -- set Near to point to false
-		if not InProperty then -- if the player is not inside a property
-		for k,v in pairs(Properties) do -- loop over known properties
-			local dist = #(v.entrance - PlayerCoords) -- Check distance to entrance
-			if dist <= 10.0 then -- if player is semi-close
-			Sleep = 0 -- set the sleep to every tick
-			-- draw the marker on the ground so that the player can see where the door is
-			DrawMarker(27, v.entrance - vector3(0,0,0.9), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 50, 50, 200, 200, false, false, 2, true, nil, nil, false)
-			if dist <= 2.0 then -- if player is very close (within marker)
-				Near = true -- set near point to true
-				-- Draw TextUI
-				if not DrawingUI.showing or DrawingUI.text ~= "[E] Enter Property" then
-				DrawingUI.showing = true 
-				DrawingUI.text = "[E] Enter Property"
-				ESX.TextUI(DrawingUI.text, "info")
-				end
-				-- If Player interacts with the door
-				if IsControlJustPressed(0, 38) then
-				-- debug code, will be moved
-				DoScreenFadeOut(500)
-				Wait(700)
-				ESX.TriggerServerCallback("esx_property:AttemptEnter", function(Enter, furniture)
-					if Enter then 
-					SpawnFurniture(furniture)
-					ESX.ShowNotification("~b~Entering~s~ Property!", "success")
-					else
-					ESX.ShowNotification("~r~Cannot Enter~s~ Property", "error")
+		local sleep = 1000 -- sleep while inactive
+		local playerCoords = GetEntityCoords(ESX.PlayerData.ped) -- get current coords
+		local inProperty = LocalPlayer.state.CurrentProperty -- grab the state bag (set by the server-side) to see if they are inside a properly
+		local near = false -- set Near to point to false
+		if not inProperty then -- if the player is not inside a property
+			for k,v in pairs(Properties) do -- loop over known properties
+				local dist = #(v.entrance - playerCoords) -- Check distance to entrance
+				if dist <= 10.0 then -- if player is semi-close
+					sleep = 0 -- set the sleep to every tick
+					-- draw the marker on the ground so that the player can see where the door is
+					DrawMarker(27, v.entrance - vector3(0,0,0.9), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 50, 50, 200, 200, false, false, 2, true, nil, nil, false)
+					if dist <= 2.0 then -- if player is very close (within marker)
+						near = true -- set near point to true
+						-- Draw TextUI
+						if not drawingUI.showing or drawingUI.text ~= "[E] Enter Property" then
+							drawingUI.showing = true 
+							drawingUI.text = "[E] Enter Property"
+							ESX.TextUI(drawingUI.text, "info")
+						end
+						-- If Player interacts with the door
+						if IsControlJustPressed(0, 38) then
+							-- debug code, will be moved
+							DoScreenFadeOut(500)
+							Wait(700)
+							ESX.TriggerServerCallback("esx_property:AttemptEnter", function(Enter, furniture)
+								if Enter then 
+									SpawnFurniture(furniture)
+									ESX.ShowNotification("~b~Entering~s~ Property!", "success")
+								else
+									ESX.ShowNotification("~r~Cannot Enter~s~ Property", "error")
+								end
+								Wait(600)
+								DoScreenFadeIn(500)
+							end, v.id)
+						end
 					end
-					Wait(600)
-					DoScreenFadeIn(500)
-				end, v.id)
 				end
 			end
-			end
-		end
 		else -- Player is Inside a property
-		local Current_Property = Properties[InProperty] -- get the stroed details of the property they are inside
-		-- everything under here is debug code and will either be moved or refactored
-		local dist = #(Current_Property.interior.pos - PlayerCoords) 
-		if dist <= 5.0 then
-			Sleep = 0
-			DrawMarker(27, Current_Property.interior.pos - vector3(0,0,0.9), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 50, 50, 200, 200, false, false, 2, true, nil, nil, false)
-			if dist <= 2.0 then
-			Near = true
-			if not DrawingUI.showing or DrawingUI.text ~= "[E] Exit Property" then
-				DrawingUI.showing = true 
-				DrawingUI.text = "[E] Exit Property"
-				ESX.TextUI(DrawingUI.text, "info")
-			end
-			if IsControlJustPressed(0, 38) then
-				DoScreenFadeOut(500)
-				Wait(500)
-				ESX.TriggerServerCallback("esx_property:AttemptLeave", function(Leave, Data)
-				if Leave then 
-					RemoveAllFurniture()
-					LocalPlayer.state:set("CurrentProperty", false)
-					ESX.ShowNotification("~b~Leaving~s~ Property!", "success")
-				else
-					ESX.ShowNotification("~r~Cannot Leave~s~ Property", "error")
+			local currentProperty = Properties[inProperty] -- get the stroed details of the property they are inside
+			-- everything under here is debug code and will either be moved or refactored
+			local dist = #(currentProperty.interior.pos - playerCoords)
+			if dist <= 5.0 then
+				sleep = 0
+				DrawMarker(27, currentProperty.interior.pos - vector3(0,0,0.9), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 50, 50, 200, 200, false, false, 2, true, nil, nil, false)
+				if dist <= 2.0 then
+					near = true
+					if not drawingUI.showing or drawingUI.text ~= "[E] Exit Property" then
+						drawingUI.showing = true
+						drawingUI.text = "[E] Exit Property"
+						ESX.TextUI(drawingUI.text, "info")
+					end
+					if IsControlJustPressed(0, 38) then
+						DoScreenFadeOut(500)
+						Wait(500)
+						ESX.TriggerServerCallback("esx_property:AttemptLeave", function(Leave, Data)
+							if Leave then
+								RemoveAllFurniture()
+								LocalPlayer.state:set("CurrentProperty", false)
+								ESX.ShowNotification("~b~Leaving~s~ Property!", "success")
+							else
+								ESX.ShowNotification("~r~Cannot Leave~s~ Property", "error")
+							end
+							Wait(1000)
+							DoScreenFadeIn(500)
+							Wait(500)
+						end)
+					end
 				end
-				Wait(1000)
-				DoScreenFadeIn(500)
-				Wait(500)
-				end)
-			end
 			end
 		end
+		if not near and drawingUI.showing then
+			drawingUI.showing = false
+			ESX.HideUI()
 		end
-		if not Near and DrawingUI.showing then 
-		DrawingUI.showing = false 
-		ESX.HideUI()
-		end
-		Wait(Sleep)
+		Wait(sleep)
 	end
 end)
 
@@ -123,17 +123,18 @@ function CreateInterior(interior)
 		PreviewedInt.obj = nil -- nilify the object reference
 	end
 	PreviewedInt.previewing = true
-	if interior.type == "ipl" then 
+	if interior.type == "ipl" then
 		SetEntityCoords(ESX.PlayerData.ped, interior.pos) -- teleport player to the coords
 	elseif interior.type == "shell" then
 		PreviewedInt.type = "shell" -- set type
 		local Coords = GetEntityCoords(PlayerPedId()) -- grab current coords
-		ESX.Streaming.RequestModel(joaat(interior.value)) -- request shell model
-		local obj = CreateObject(joaat(interior.value), Coords.x,Coords.y, 2000, false, true, false) -- spawn shell 2000 units in the air
-		FreezeEntityPosition(obj, true) -- freeze shell
-		SetEntityCoords(ESX.PlayerData.ped, Coords.x,Coords.y, 2001) -- teleport player into shell
-		PreviewedInt.obj = obj -- save the object reference
-		PreviewedInt.Coords = Coords 
+		ESX.Streaming.RequestModel(joaat(interior.value), function() -- request shell model
+			local obj = CreateObject(joaat(interior.value), Coords.x,Coords.y, 2000, false, true, false) -- spawn shell 2000 units in the air
+			FreezeEntityPosition(obj, true) -- freeze shell
+			SetEntityCoords(ESX.PlayerData.ped, Coords.x,Coords.y, 2001) -- teleport player into shell
+			PreviewedInt.obj = obj -- save the object reference
+			PreviewedInt.Coords = Coords
+		end)
 	end
 end
 
@@ -159,7 +160,7 @@ function ViewInteriors()
   	end)
 end
 
-RegisterCommand("ViewInteriors", ViewInteriors)
+RegisterCommand("ViewInteriors", ViewInteriors, false)
 
 AddEventHandler("onResourceStop", function(name)
 	if name ~= GetCurrentResourceName() then return end
