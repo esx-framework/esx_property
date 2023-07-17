@@ -12,57 +12,53 @@ use of this source, with or without modification, are permitted provided that th
   This copyright should appear in every part of the project code
 ]] 
 
-local Properties = {} -- Define Properties Locally
-SpawnedFurniture = {} -- define furniture globally
+local properties = {}
+SpawnedFurniture = {}
 
-RegisterNetEvent("esx_property:syncProperty", function(ID, Data) -- event for syncing data
-	Properties[ID] = Data
+RegisterNetEvent("esx_property:syncProperty", function(id, data)
+	properties[id] = data
 end)
 
-RegisterNetEvent("esx_property:syncPropertyInterally", function(ID, Data) -- sync for players while inside property
-	Properties[ID] = Data
-	RemoveAllFurniture()
-	SpawnFurniture(Data.furniture)
+RegisterNetEvent("esx_property:syncPropertyInterally", function(id, data)
+	properties[id] = data
+	removeAllFurniture()
+	spawnFurniture(data.furniture)
 end)
 
--- debug command - Remove in future
+-- debug command
 RegisterCommand("create", function()
-	local CreationMenu = CreationMenuClass() -- create the creation menu
-	CreationMenu.MainMenu() -- show the main menu
+	local creationMenu = creationMenuClass()
+	creationMenu.mainMenu()
 end)
-
--- Main loop
-local drawingUI = {showing = false, text = ""} -- create table for showing TextUI
 
 CreateThread(function()
-	while true do --continuous loop
-		local sleep = 1000 -- sleep while inactive
-		local playerCoords = GetEntityCoords(ESX.PlayerData.ped) -- get current coords
-		local inProperty = LocalPlayer.state.CurrentProperty -- grab the state bag (set by the server-side) to see if they are inside a properly
-		local near = false -- set Near to point to false
-		if not inProperty then -- if the player is not inside a property
-			for k,v in pairs(Properties) do -- loop over known properties
-				local dist = #(v.entrance - playerCoords) -- Check distance to entrance
-				if dist <= 10.0 then -- if player is semi-close
-					sleep = 0 -- set the sleep to every tick
-					-- draw the marker on the ground so that the player can see where the door is
+	local drawingUI = {showing = false, text = ""}
+	while true do
+		local sleep = 1500
+		local playerCoords = GetEntityCoords(ESX.PlayerData.ped)
+		local inProperty = ESX.PlayerData.metadata.currentProperty
+		local near = false
+		if not inProperty then
+			for k,v in pairs(properties) do
+				local dist = #(v.entrance - playerCoords)
+				if dist <= 10.0 then
+					sleep = 0
 					DrawMarker(27, v.entrance - vector3(0,0,0.9), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 50, 50, 200, 200, false, false, 2, true, nil, nil, false)
-					if dist <= 2.0 then -- if player is very close (within marker)
-						near = true -- set near point to true
-						-- Draw TextUI
+					if dist <= 2.0 then
+						near = true
+
 						if not drawingUI.showing or drawingUI.text ~= "[E] Enter Property" then
 							drawingUI.showing = true 
 							drawingUI.text = "[E] Enter Property"
 							ESX.TextUI(drawingUI.text, "info")
 						end
-						-- If Player interacts with the door
+
 						if IsControlJustPressed(0, 38) then
-							-- debug code, will be moved
 							DoScreenFadeOut(500)
 							Wait(700)
-							ESX.TriggerServerCallback("esx_property:AttemptEnter", function(Enter, furniture)
+							ESX.TriggerServerCallback("esx_property:attemptEnter", function(Enter, furniture)
 								if Enter then 
-									SpawnFurniture(furniture)
+									spawnFurniture(furniture)
 									ESX.ShowNotification("~b~Entering~s~ Property!", "success")
 								else
 									ESX.ShowNotification("~r~Cannot Enter~s~ Property", "error")
@@ -74,9 +70,8 @@ CreateThread(function()
 					end
 				end
 			end
-		else -- Player is Inside a property
-			local currentProperty = Properties[inProperty] -- get the stroed details of the property they are inside
-			-- everything under here is debug code and will either be moved or refactored
+		else
+			local currentProperty = properties[inProperty]
 			local dist = #(currentProperty.interior.pos - playerCoords)
 			if dist <= 5.0 then
 				sleep = 0
@@ -91,10 +86,9 @@ CreateThread(function()
 					if IsControlJustPressed(0, 38) then
 						DoScreenFadeOut(500)
 						Wait(500)
-						ESX.TriggerServerCallback("esx_property:AttemptLeave", function(Leave, Data)
+						ESX.TriggerServerCallback("esx_property:attemptLeave", function(Leave, data)
 							if Leave then
-								RemoveAllFurniture()
-								LocalPlayer.state:set("CurrentProperty", false)
+								removeAllFurniture()
 								ESX.ShowNotification("~b~Leaving~s~ Property!", "success")
 							else
 								ESX.ShowNotification("~r~Cannot Leave~s~ Property", "error")
@@ -115,54 +109,53 @@ CreateThread(function()
 	end
 end)
 
--- Interior Viewer
 local PreviewedInt = {}
-function CreateInterior(interior)
-	if PreviewedInt.obj then -- if saved shell object
-		DeleteObject(PreviewedInt.obj) -- delete object
-		PreviewedInt.obj = nil -- nilify the object reference
+local function createInterior(interior)
+	if previewedInt.obj then
+		DeleteObject(previewedInt.obj)
+		previewedInt.obj = nil 
 	end
-	PreviewedInt.previewing = true
+	previewedInt.previewing = true
 	if interior.type == "ipl" then
-		SetEntityCoords(ESX.PlayerData.ped, interior.pos) -- teleport player to the coords
+		SetEntityCoords(ESX.PlayerData.ped, interior.pos)
 	elseif interior.type == "shell" then
-		PreviewedInt.type = "shell" -- set type
-		local Coords = GetEntityCoords(PlayerPedId()) -- grab current coords
-		ESX.Streaming.RequestModel(joaat(interior.value), function() -- request shell model
-			local obj = CreateObject(joaat(interior.value), Coords.x,Coords.y, 2000, false, true, false) -- spawn shell 2000 units in the air
+		previewedInt.type = "shell"
+		local Coords = GetEntityCoords(PlayerPedId())
+		ESX.Streaming.RequestModel(joaat(interior.value), function()
+			local obj = CreateObject(joaat(interior.value), Coords.x,Coords.y, 2000, false, true, false)
 			FreezeEntityPosition(obj, true) -- freeze shell
-			SetEntityCoords(ESX.PlayerData.ped, Coords.x,Coords.y, 2001) -- teleport player into shell
-			PreviewedInt.obj = obj -- save the object reference
-			PreviewedInt.Coords = Coords
+			SetEntityCoords(ESX.PlayerData.ped, Coords.x,Coords.y, 2001)
+			previewedInt.obj = obj
+			previewedInt.Coords = Coords
 		end)
 	end
 end
 
-function ViewInteriors()
-  	local elements = {{title = "Interior Viewer", unselectable = true, description = "select an interior to view"}} -- set menu title
-  	if PreviewedInt.obj then -- if saved object
-		elements[#elements +1] = {title = "Delete Shell Interior", delete = true} -- allow deleting the object
+local function viewInteriors()
+  	local elements = {{title = "Interior Viewer", unselectable = true, description = "select an interior to view"}}
+  	if previewedInt.obj then
+		elements[#elements +1] = {title = "Delete Shell Interior", delete = true}
   	end
-  	for i=1, #Config.Interiors do -- loop the interiors
+  	for i=1, #Config.Interiors do
 		elements[#elements +1] = {title = Config.Interiors[i].label,description = "Type: " ..Config.Interiors[i].type, value = i}
   	end
-  	ESX.OpenContext("right", elements, function(_, element) -- open menu
-		ESX.CloseContext() -- close menu
-		if element.delete then -- shell Deletation
-	  		if PreviewedInt.obj then -- saved object
-				DeleteObject(PreviewedInt.obj) -- delete object
-				PreviewedInt.obj = nil -- nil the object
-				SetEntityCoords(ESX.PlayerData.ped, PreviewedInt.Coords) -- set player onto the ground
+  	ESX.OpenContext("right", elements, function(_, element)
+		ESX.CloseContext()
+		if element.delete then
+	  		if previewedInt.obj then
+				DeleteObject(previewedInt.obj)
+				previewedInt.obj = nil
+				SetEntityCoords(ESX.PlayerData.ped, previewedInt.Coords)
 	  		end
 		else
-	  		CreateInterior(Config.Interiors[element.value]) -- create the selected interior
+	  		createInterior(Config.Interiors[element.value])
 		end
   	end)
 end
 
-RegisterCommand("ViewInteriors", ViewInteriors, false)
+RegisterCommand("viewInteriors", viewInteriors, false)
 
 AddEventHandler("onResourceStop", function(name)
 	if name ~= GetCurrentResourceName() then return end
-	LocalPlayer.state.CurrentProperty = nil
+	TriggerServerEvent('esx_property:clearCurrentProperty')
 end)

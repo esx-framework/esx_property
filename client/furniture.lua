@@ -12,7 +12,7 @@ use of this source, with or without modification, are permitted provided that th
 	This copyright should appear in every part of the project code
 ]] 
 
-function SpawnFurniture(furniture)
+function spawnFurniture(furniture)
 	for i = 1, #furniture do
 		ESX.Streaming.RequestModel(joaat(furniture[i].model), function()
 			local pos = vector3(furniture[i].pos.x,furniture[i].pos.y, furniture[i].pos.z)
@@ -30,7 +30,7 @@ function SpawnFurniture(furniture)
 	end
 end
 	
-function RemoveAllFurniture()
+function removeAllFurniture()
 	for i = 1, #SpawnedFurniture do
 		if DoesEntityExist(SpawnedFurniture[i].obj) then
 			DeleteEntity(SpawnedFurniture[i].obj)
@@ -64,7 +64,7 @@ RegisterNetEvent("property:UpdateFurniture", function(id, action, data)
 	end
 end)
 	
-RegisterNetEvent("property:CreateFurniture", SpawnFurniture)
+RegisterNetEvent("property:CreateFurniture", spawnFurniture)
 	
 RegisterCommand("furnitest", function()
 	local data = {model = "v_corp_conftable2", pos = GetEntityCoords(ESX.PlayerData.ped), rotation = GetEntityRotation(ESX.PlayerData.ped)}

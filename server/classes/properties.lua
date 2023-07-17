@@ -1,49 +1,49 @@
 -- @class
--- Player Class
+-- Property Class
 PropertyClass = {
     __index = PropertyClass
 }
 
 
-function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,garage, data)
+function PropertyClass:CreateProperty(houseId, owner, price, furniture, cctv, garage, data)
     local property = setmetatable({}, PropertyClass)
 
-    -- Define Default Values
-    property.HouseID = HouseID
-    property.Price = Price
-    property.Owner = Owner or nil -- set to nil if no owner
+    property.houseId = houseId
+    property.price = price
+    property.owner = owner or nil
     property.data = json.decode(data)
-    property.interior = GetInteriorValues(property.data.interior) -- grab the interior settings from the cnfig
+    property.interior = GetInteriorValues(property.data.interior)
     property.furniture = json.decode(furniture)
     property.garage = json.decode(garage)
-    property.garage.pos = vector3(property.garage.pos.x, property.garage.pos.y, property.garage.pos.z) -- convert to vector
-    property.CCTV = json.decode(CCTV)
-    property.entrance = vector3(property.data.entrance.x,property.data.entrance.y, property.data.entrance.z) -- convert to vector
-    property.PlayersInside = {}
+    property.garage.pos = vector3(property.garage.pos.x, property.garage.pos.y, property.garage.pos.z)
+    property.cctv = json.decode(cctv)
+    property.entrance = vector3(property.data.entrance.x,property.data.entrance.y, property.data.entrance.z)
+    property.playersInside = {}
 
-    -- This function Syncs basic info the all online clients
+    ---sync property to all clients
     function property:syncProperty()
-        TriggerClientEvent("esx_property:syncProperty",-1, self.HouseID, {
-            id = self.HouseID,
+        TriggerClientEvent("esx_property:syncProperty",-1, self.houseId, {
+            id = self.houseId,
             entrance = self.entrance,
             garage = self.garage.pos,
         })
     end
 
-    -- syncs a property to a specific player (for example, when loading into the server)
-    function property:syncPropertyToPlayer(Player)
-        TriggerClientEvent("esx_property:syncProperty", Player, self.HouseID, {
-            id = self.HouseID,
+    ---sync property to a player
+    ---@param playerId integer
+    function property:syncPropertyToPlayer(playerId)
+        TriggerClientEvent("esx_property:syncProperty", playerId, self.houseId, {
+            id = self.houseId,
             entrance = self.entrance,
             garage = self.garage.pos,
         })
     end
 
-    -- sync property to players inside the property, whom will have more info than those outside.
+    ---sync property to players inside the property
     function property:syncPropertyToInsidePlayers()
-        for i=1, #self.PlayersInside do
-            TriggerClientEvent("esx_property:syncPropertyInterally", self.PlayersInside[i].id, self.HouseID, {
-                id = self.HouseID,
+        for i=1, #self.playersInside do
+            TriggerClientEvent("esx_property:syncPropertyInterally", self.playersInside[i].id, self.houseId, {
+                id = self.houseId,
                 entrance = self.entrance,
                 garage = self.garage.pos,
                 interior = self.interior,
@@ -52,10 +52,11 @@ function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,gara
         end
     end
 
-     -- sync property to a single player inside the property, whom will have more info than those outside.
-    function property:syncPropertyToInsidePlayer(ply)
-        TriggerClientEvent("esx_property:syncPropertyInterally", ply, self.HouseID, {
-            id = self.HouseID,
+    ---sync property to a specific player inside it
+    ---@param playerId integer
+    function property:syncPropertyToInsidePlayer(playerId)
+        TriggerClientEvent("esx_property:syncPropertyInterally", playerId, self.houseId, {
+            id = self.houseId,
             entrance = self.entrance,
             garage = self.garage.pos,
             interior = self.interior,
@@ -64,22 +65,21 @@ function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,gara
     end
 
 
-    -- allow scripts to change any value of the property
-    function property:SetValue(key, value) 
-        if key == "HouseID" then return end -- dont allow houseID to be changed, otherwise big database errors
+    ---allow scripts to change any value of the property
+    function property:set(key, value) 
+        if key == "houseId" then return end
         self[key] = value
     end
 
-    -- allow scripts save extra data (metadata) about a property
-    function property:SetMetadata(key, value) 
+    ---allow scripts save extra data (metadata) about a property
+    function property:setMetadata(key, value) 
         self.data[key] = value
     end
 
-    -- furniture code, will be refactored in the future
-
+    --- furniture code, will be refactored in the future
     function property:syncFurnitureItem(id)
-        for i=1, #self.PlayersInside do
-            TriggerClientEvent("esx_property:UpdateFurniture", self.PlayersInside[i].id, id,"SetPosition", self.furniture.objects[id])
+        for i=1, #self.playersInside do
+            TriggerClientEvent("esx_property:UpdateFurniture", self.playersInside[i].id, id,"SetPosition", self.furniture.objects[id])
         end
     end
 
@@ -96,63 +96,64 @@ function PropertyClass:CreateProperty(HouseID, Owner,Price, furniture, CCTV,gara
         self:syncFurnitureItem(id)
     end
 
-    -- Registers a player as being inside the property
-    function property:enter(player)
-        self.PlayersInside[#self.PlayersInside +1] = {id = player, name = Player(player).state.name} -- store the players id and name
-        property:syncPropertyToInsidePlayer(player)
-        SetPlayerRoutingBucket(player, self.HouseID)
-        Player(player).state:set("CurrentProperty", HouseID, true) -- store the house id as a state bag
-        local Ped = GetPlayerPed(player)
-        SetEntityCoords(Ped, self.interior.pos) -- teleport them into the interior
+    ---Registers a player as being inside the property
+    function property:enter(playerId)
+        local xPlayer = ESX.GetPlayerFromId(playerId)
+        self.playersInside[#self.playersInside + 1] = {id = playerId, name = xPlayer.name}
+        property:syncPropertyToInsidePlayer(playerId)
+        SetPlayerRoutingBucket(playerId, self.houseId)
+        xPlayer.setMeta('currentProperty', self.houseId)
+        local ped = GetPlayerPed(playerId)
+        SetEntityCoords(ped, self.interior.pos)
     end
 
-    -- get a specific player from inside the property
-    function property:GetPlayerInside(player)
-        for i=1,#(self.PlayersInside) do
-            if self.PlayersInside[i].id == player then 
+    ---get a specific player from inside the property
+    function property:getPlayerInside(playerId)
+        for i=1,#(self.playersInside) do
+            if self.playersInside[i].id == playerId then 
                 return i
             end
         end
         return false
     end
 
-    -- un register the player from being inisde
-    function property:leave(player)
-        local isInside = self:GetPlayerInside(player)
-        if isInside then 
-            table.remove(self.PlayersInside, isInside)
-            SetPlayerRoutingBucket(player, 0)
-            Player(player).state:set("CurrentProperty", false, true)
-            local ped = GetPlayerPed(player)
+    ---un register the player from being inisde
+    function property:leave(playerId)
+        local isInside = self:getPlayerInside(playerId)
+        if isInside then
+            local xPlayer = ESX.GetPlayerFromId(playerId)
+            table.remove(self.playersInside, isInside)
+            SetPlayerRoutingBucket(playerId, 0)
+            xPlayer.setMeta('currentProperty', self.houseId)
+            local ped = GetPlayerPed(playerId)
             SetEntityCoords(ped, self.entrance)
-            self:syncPropertyToPlayer(player)
+            self:syncPropertyToPlayer(playerId)
         end
     end
 
-    -- function to buy the property, optional removal of money
-    function property:buy(player, removeMoney)
-        local xPlayer = ESX.GetPlayerFromId(player) -- get xPlayer
-        if not xPlayer then -- check if player is online
-            return false 
+    ---function to buy the property, optional removal of money
+    function property:buy(playerId, removeMoney)
+        local xPlayer = ESX.GetPlayerFromId(player)
+        if not xPlayer then
+            return false
         end 
         if removeMoney then
-            xPlayer.removeAccountMoney(Config.Account, self.Price)
+            xPlayer.removeAccountMoney(Config.Account, self.price)
         end 
-        self.Owner = xPlayer.identifier -- set the owner to the player
+        self.owner = xPlayer.identifier
         return true
     end
 
-    -- Property Saving 
-   
+    --- Property Saving 
     function property:save()
         local furniture = json.encode(self.furniture)
-        local CCTV = json.encode(self.CCTV)
+        local cctv = json.encode(self.cctv)
         local garage = json.encode(self.garage)
         local data = json.encode(self.data)
 
-        MySQL.update('UPDATE properties SET owner = ?, furniture = ?, price = ?, cctv = ?, garage = ?, data = ? WHERE HouseID = ?', {self.Owner, furniture, self.Price, CCTV, garage, data, self.HouseID}, function(affectedRows)
+        MySQL.update('UPDATE properties SET owner = ?, furniture = ?, price = ?, cctv = ?, garage = ?, data = ? WHERE houseId = ?', {self.owner, furniture, self.price, cctv, garage, data, self.houseId}, function(affectedRows)
             if affectedRows then
-                print(("[INFO] Sucessfully Saved Property - %s"):format(self.HouseID))
+                print(("[INFO] Sucessfully Saved Property - %s"):format(self.houseId))
             end
         end)
     end

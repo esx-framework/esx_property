@@ -13,98 +13,97 @@ modification, are permitted provided that the following conditions are met:
 	This copyright should appear in every part of the project code
 ]]
 
-local Properties = {} -- define local table to store property classes
+local properties = {}
 
 CreateThread(function()
-	local properties = MySQL.query.await("SELECT * From `properties`") -- Get all saved properties
-	for _,v in pairs(properties) do -- loop through the returned rows
-		Properties[v.HouseID] = PropertyClass:CreateProperty(v.HouseID, v.owner,v.price, v.furniture, v.cctv, v.garage, v.data) -- Create and save property class
-		Wait(100) -- Allow a 100ms for it to create
-		Properties[v.HouseID]:syncProperty() -- Sync the property to players who are online, to allow resource to be restarted in-game
+	local properties = MySQL.query.await("SELECT * From `properties`")
+	for _,v in pairs(properties) do
+		properties[v.HouseID] = PropertyClass:CreateProperty(v.HouseID, v.owner,v.price, v.furniture, v.cctv, v.garage, v.data)
+		Wait(100)
+		properties[v.HouseID]:syncProperty()
 	end
-	StartDBSync()
-	print(("successfully Loaded ^5%s^7 Properties"):format(ESX.Table.SizeOf(properties)))
+	startDBSync()
+	print(("successfully Loaded ^5%s^7 properties"):format(ESX.Table.SizeOf(properties)))
 end)
 
-AddEventHandler("esx:playerLoaded", function(src) -- Listen for when a player has loaded into the server
-	for _,property in pairs(Properties) do -- loop through all existing properties
-		property:syncPropertyToPlayer(src) -- sync basic data to the player, so they can see markers, etc
-		Wait(0) -- wait a tick, to make sure the load isnt too heavy on the player
+AddEventHandler("esx:playerLoaded", function(src)
+	for _,property in pairs(properties) do
+		property:syncPropertyToPlayer(src)
+		Wait(0)
 	end
 end)
 
-ESX.RegisterServerCallback("esx_property:CreateProperty", function(src, cb, Class) -- when an admin creates a property
-	local info = { -- create basic table to store extra info
-		interior = Class.interior,
-		entrance = Class.entrance
+ESX.RegisterServerCallback("esx_property:createProperty", function(src, cb, class)
+	local info = {
+		interior = class.interior,
+		entrance = class.entrance
 	}
-	-------- JSON encoding so it can be stored in the database ------------
-	local furniture = json.encode({enabled = Class.furniture, objects = {}})
-	local CCTV = json.encode(Class.CCTV)
-	local garage = json.encode(Class.garage)
+	local furniture = json.encode({enabled = class.furniture, objects = {}})
+	local CCTV = json.encode(class.cctv)
+	local garage = json.encode(class.garage)
 	local data = json.encode(info)
-	-------------------------------------------------------------------------
 	local output = MySQL.execute.await("INSERT INTO `properties` (furniture, price, cctv, garage, data) VALUES (?, ?, ?, ?, ?)", 
-	{furniture, Class.Price, CCTV, garage, data}) -- Insert the data into the database and await the result
-	local HouseID = output.insertId -- output.insertId returns the primary key of the input, which in this case, will be the ID
-	Properties[HouseID] = PropertyClass:CreateProperty(HouseID, nil, Class.Price,furniture, CCTV,garage, data) -- create property Class
-	Properties[HouseID]:syncProperty() -- sync new property to online players.
+	{furniture, class.price, CCTV, garage, data})
+	local houseId = output.insertId
+	properties[houseId] = PropertyClass:CreateProperty(houseId, nil, class.price, furniture, CCTV, garage, data)
+	properties[houseId]:syncProperty()
 end)
 
-ESX.RegisterServerCallback("esx_property:AttemptEnter", function(src, cb, id) -- called when a player tries to enter a property
-	local property = Properties[tonumber(id)] -- grab the property they are trying to enter
-	if property then -- check the property exists
-		cb(true, property.furniture.enabled and property.furniture.objects or {}) -- send back, to the cient so say they can enter and send all known property furniture to the client
-		property:enter(src) -- trigger the enter function, to send them into the property
-	else
-		cb(false) -- send back that they cannot enter the property
+ESX.RegisterServerCallback("esx_property:attemptEnter", function(src, cb, id)
+	local property = properties[tonumber(id)]
+	if not property then 
+		return cb(false)
 	end
+	property:enter(src)
+	cb(true, property.furniture.enabled and property.furniture.objects or {})
 end)
 
-ESX.RegisterServerCallback("esx_property:AttemptLeave", function(src, cb) -- called when a player tries to leave a property
-	local Property = getPropertyPlayerIsIn(src) -- Grab the property the player is in
-	if Property then -- check this is a valid property
-		cb(true) -- callback that they can leave
-		Property:leave(src) -- trigger the leave function to unregister them from the property
-	else
-		cb(false) -- callback that they cannot leave
+ESX.RegisterServerCallback("esx_property:attemptLeave", function(src, cb)
+	local property = getPropertyPlayerIsIn(src)
+	if not property then
+		return cb(false)
 	end
+	property:leave(src)
+	cb(true)
 end)
 
-ESX.RegisterServerCallback("esx_property:AddFurniture", function(src, cb, data) -- called when a player tries to add furniture
-	local Property = getPropertyPlayerIsIn(src) -- Grab the property the player is in
-	if Property then -- check this is a valid property
-		cb(true) -- callback that they can leave
-		Property:addFurniture(data.model, data.pos, data.rotation) -- trigger the AddFurniture function
-	else
-		cb(false) -- callback that they cannot leave
+ESX.RegisterServerCallback("esx_property:addFurniture", function(src, cb, data)
+	local property = getPropertyPlayerIsIn(src)
+	if not property then
+		return cb(false)
 	end
+	property:addFurniture(data.model, data.pos, data.rotation)
+	cb(true)
 end)
 
-ESX.RegisterServerCallback("esx_property:editFurniture", function(src, cb, data) -- called when a player tries to add furniture
-	local Property = getPropertyPlayerIsIn(src) -- Grab the property the player is in
-	if Property then -- check this is a valid property
-		cb(true) -- callback that they can leave
-		Property:editFurniture(data.id, data.pos, data.rotation) -- trigger the AddFurniture function
-	else
-		cb(false) -- callback that they cannot leave
+ESX.RegisterServerCallback("esx_property:editFurniture", function(src, cb, data)
+	local property = getPropertyPlayerIsIn(src)
+	if not property then
+		return cb(false)
 	end
+	property:editFurniture(data.id, data.pos, data.rotation)
+	cb(true)
+end)
+
+RegisterNetEvent('esx_property:clearCurrentProperty', function()
+	local xPlayer = ESX.GetPlayerFromId(source)
+	xPlayer.clearMeta('currentProperty')
 end)
 
 --  Simple function to retrieve a property, from its id.
 --- @param id (number) Id of the property
---- @return Properties class
+--- @return properties class
 exports("getPropertyFromId", function(id)
-	return Properties[tonumber(id)]
+	return properties[tonumber(id)]
 end)
 
 --  Simple function to retrieve the Class of the property a player is inside
 --- @param player (number) ServerId of the player
---- @return Properties class
+--- @return properties class
 function getPropertyPlayerIsIn(player)
-	local Current = Player(player).state.CurrentProperty
-	if Current then
-		return Properties[tonumber(Current)]
+	local current = ESX.GetPlayerFromId(player).metadata.currentProperty
+	if current then
+		return properties[tonumber(current)]
 	end
 	return false
 end
@@ -113,13 +112,12 @@ end
 exports("getPropertyPlayerIsIn", getPropertyPlayerIsIn)
 
 -- Property Saving
-
-function SaveAllProperties(cb)
-	local count = ESX.Table.SizeOf(Properties) -- Get how many properties are stored
-	if count > 0 then -- check if there is any stored (no point in saving if there is no properties)
-		local parameters = {} -- define table for SQL Statement
-		local time = os.time() -- define a start time
-		for k,v in pairs(Properties) do-- loop over all properties, (k,v in pairs since some numbers may be missing)
+function saveAllProperties(cb)
+	local count = ESX.Table.SizeOf(properties)
+	if count > 0 then
+		local parameters = {}
+		local time = os.time()
+		for k,v in pairs(properties) do
 			parameters[#parameters + 1] = {v.Owner, json.encode(v.furniture), v.Price, json.encode(v.CCTV), json.encode(v.garage), json.encode(v.data), v.HouseID}
 		end
 		MySQL.prepare(
@@ -129,8 +127,7 @@ function SaveAllProperties(cb)
 				if type(cb) == 'function' then
 					cb()
 				else
-					-- Print that the save was successful
-					print(('[^2INFO^7] Saved ^5%s^7 %s over ^5%s^7 ms'):format(count, count > 1 and 'Properties' or 'Property', ESX.Math.Round((os.time() - time) / 1000000, 2)))
+					print(('[^2INFO^7] Saved ^5%s^7 %s over ^5%s^7 ms'):format(count, count > 1 and 'properties' or 'Property', ESX.Math.Round((os.time() - time) / 1000000, 2)))
 				end
 			end
 		end)
@@ -141,27 +138,27 @@ end
 AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
 	if eventData.secondsRemaining == 60 then
 		CreateThread(function()
-			Wait(40000) -- Wait 40 seconds
-			SaveAllProperties()
+			Wait(40000)
+			saveAllProperties()
 		end)
 	end
 end)
 
--- Triggered when restarting the server with txAdmin
 AddEventHandler('txAdmin:events:serverShuttingDown', function()
-	SaveAllProperties()
+	saveAllProperties()
 end)
 
 -- function for Intervaled saving
-function StartDBSync()
+function startDBSync()
 	CreateThread(function()
 		while true do
-			Wait(Config.SaveInterval * 100000) -- Wait Config.SaveInterval in minutes
-			SaveAllProperties()
+			Wait(Config.SaveInterval * 100000)
+			saveAllProperties()
 		end
 	end)
 end
 
+-- debug command
 RegisterCommand("property:forcesave", function()
-	SaveAllProperties()
+	saveAllProperties()
 end)
