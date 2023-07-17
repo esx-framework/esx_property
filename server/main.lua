@@ -18,7 +18,7 @@ local properties = {}
 CreateThread(function()
 	local properties = MySQL.query.await("SELECT * FROM properties")
 	for _,v in pairs(properties) do
-		properties[v.houseId] = PropertyClass:CreateProperty(v.HouseID, v.owner,v.price, v.furniture, v.cctv, v.garage, v.data)
+		properties[v.houseId] = PropertyClass:CreateProperty(v.houseId, v.owner, v.price, v.furniture, v.cctv, v.garage, v.data)
 		Wait(100)
 		properties[v.houseId]:syncProperty()
 	end
