@@ -16,11 +16,11 @@ modification, are permitted provided that the following conditions are met:
 local properties = {}
 
 CreateThread(function()
-	local properties = MySQL.query.await("SELECT * From `properties`")
+	local properties = MySQL.query.await("SELECT * FROM properties")
 	for _,v in pairs(properties) do
-		properties[v.HouseID] = PropertyClass:CreateProperty(v.HouseID, v.owner,v.price, v.furniture, v.cctv, v.garage, v.data)
+		properties[v.houseId] = PropertyClass:CreateProperty(v.HouseID, v.owner,v.price, v.furniture, v.cctv, v.garage, v.data)
 		Wait(100)
-		properties[v.HouseID]:syncProperty()
+		properties[v.houseId]:syncProperty()
 	end
 	startDBSync()
 	print(("successfully Loaded ^5%s^7 properties"):format(ESX.Table.SizeOf(properties)))
@@ -118,7 +118,7 @@ function saveAllProperties(cb)
 		local parameters = {}
 		local time = os.time()
 		for k,v in pairs(properties) do
-			parameters[#parameters + 1] = {v.Owner, json.encode(v.furniture), v.Price, json.encode(v.CCTV), json.encode(v.garage), json.encode(v.data), v.HouseID}
+			parameters[#parameters + 1] = {v.owner, json.encode(v.furniture), v.price, json.encode(v.cctv), json.encode(v.garage), json.encode(v.data), v.houseId}
 		end
 		MySQL.prepare(
 			'UPDATE `properties` SET `owner` = ?, `furniture` = ?, `price` = ?, `cctv` = ?, `garage` = ?, `data` = ? WHERE `HouseID` = ?',
@@ -127,7 +127,7 @@ function saveAllProperties(cb)
 				if type(cb) == 'function' then
 					cb()
 				else
-					print(('[^2INFO^7] Saved ^5%s^7 %s over ^5%s^7 ms'):format(count, count > 1 and 'properties' or 'Property', ESX.Math.Round((os.time() - time) / 1000000, 2)))
+					print(('[^2INFO^7] Saved ^5%s^7 %s over ^5%s^7 ms'):format(count, count > 1 and 'properties' or 'property', ESX.Math.Round((os.time() - time) / 1000000, 2)))
 				end
 			end
 		end)
