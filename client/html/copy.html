@@ -11,8 +11,8 @@
 
     ready(function () {
       window.addEventListener("message", function (event) {
-        var node = document.createElement("textarea");
-        var selection = document.getSelection();
+        let node = document.createElement("textarea");
+        let selection = document.getSelection();
 
         node.textContent = event.data.link;
         document.body.appendChild(node);
