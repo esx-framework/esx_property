@@ -81,10 +81,10 @@ Locales["fr"] = {
 		["realestate_textui"] = "Appuyez sur ~b~[E]~s~ pour accéder à ~b~%s",
 
 	-- ----------Chaînes de commande-----------------------
-		["refresh_name"] = "propriété:refresh",
-		["refresh_desc"] = "Actualiser à l état de démarrage du serveur",
-		["save_name"] = "propriété:save",
-		["save_desc"] = "Forcer l enregistrement des propriétés",
+		["refresh_name"] = "propriété:rafraîchir",
+		["refresh_desc"] = "Actualiser à l'état de démarrage du serveur",
+		["save_name"] = "propriété:sauvegarder",
+		["save_desc"] = "Forcer l'enregistrement des propriétés",
 		["nom_création"] = "propriété:créer",
 		["create_desc"] = "Créer une nouvelle propriété",
 		["nom_admin"] = "propriété:admin",
@@ -93,13 +93,13 @@ Locales["fr"] = {
 
 		-- -------- Menu Actions propriété -------------------------
 
-		["knocking"]   = "Quelqu un ~b~frappe~s~ à la porte.",
+		["knocking"]   = "Quelqu'un ~b~frappe~s~ à la porte.",
 		["name_edit"] = "Modifier le nom de la propriété",
 		["nom"] = "Nom",
 		["confirmer"] = "Confirmer",
 		["name_edit_success"] = "Vous avez défini le nom de la propriété sur ~b~%s~s~.",
 		["name_edit_error"] = "Vous ne pouvez pas définir le nom de la propriété sur ~r~%s~s~.",
-		["door_locked"] = "Porte : verrouillée",
+		["door_locked"] = "Porte : Verrouillée",
 		["door_unlocked"] = "Porte : Déverrouillée",
 		["name_manage"] = "Gérer le nom",
 		["name_manage_desc"] = "Définir le nom de la propriété.",
@@ -111,8 +111,8 @@ Locales["fr"] = {
 		["cctv_desc"] = "Vérifiez la caméra CCTV.",
 		["Inventory_title"] = "Inventaire",
 		["Inventory_desc"] = "Modifier la position du stockage des propriétés.",
-		["garde -robe_title"] = "Garde- robe",
-		["armoire_desc"] = "Modifier la position de l armoire de propriété.",
+		["garde -robe_title"] = "Garde-robe",
+		["armoire_desc"] = "Modifier la position de l'armoire de propriété.",
 		["meuble_titre"] = "Meuble",
 		["furniture_desc"] = "Modifier la position des meubles de la propriété.",
 		["enter_title"] = "Entrez",
@@ -121,7 +121,7 @@ Locales["fr"] = {
 		["buy_desc"] = "Acheter cette propriété pour $%s",
 		["sellplayer_title"] = "Vendre au joueur",
 		["sellplayer_desc"] = "Vendre cette propriété pour $%s",
-		["view_title"] = "Aperçu de l intérieur",
+		["view_title"] = "Aperçu de l'intérieur",
 		["exit_title"] = "Quitter",
 		["property_editing_error"] = "Vous modifiez actuellement la propriété.",
 		["unlock_error"] = "Vous ne pouvez pas ~b~déverrouiller~s~ cette propriété",
@@ -133,7 +133,7 @@ Locales["fr"] = {
 		["storage_pos_textui"] = "Appuyez sur ~b~[G]~s~ pour définir la position de stockage",
 		["storage_pos_success"] = "~b~Stockage~s~ Position définie.",
 		["storage_pos_error"] = "~r~Impossible~s~ de définir la position de ~b~stockage~s~.",
-		["armoire_pos_textui"] = "Appuyez sur ~b~[G]~s~ pour définir la position de la garde -robe",
+		["armoire_pos_textui"] = "Appuyez sur ~b~[G]~s~ pour définir la position de la garde-robe",
 		["armoire_pos_success"] = "~b~Armoire~s~ Définir la position.",
 		["armoire_pos_error"] = "~r~Impossible~s~ de définir la position de ~b~armoire~s~.",
 		["please_finish"] = "Veuillez finir de définir la position ~b~%s~s~",
@@ -141,7 +141,7 @@ Locales["fr"] = {
 		["select_player"] = "Sélectionner un joueur",
 		["cant_sell"] = "Impossible de vendre à ce joueur !",
 		["knock_on_door"] = "Frapper à la porte...",
-		["nobody_home"] = "Il semble que personne n est à la maison...",
+		["nobody_home"] = "Il semble que personne n'est à la maison...",
 
 		-- -------- Chaînes générales ----------------
 
@@ -152,7 +152,7 @@ Locales["fr"] = {
 		["shell_disabled"] ="Cet intérieur utilise des coques, qui sont désactivées !",
 		["access_textui"] = "Appuyez sur ~b~[E]~s~ pour accéder à ~b~%s",
 		["raid_notify_error"] = "Vous avez besoin de ~b~ %sx %s~s~ pour pouvoir effectuer un raid !",
-		["raid_notify_success"] = "Votre propriété fait actuellement l objet d un ~b~raid !",
+		["raid_notify_success"] = "Votre propriété fait actuellement l'objet d'un ~b~raid !",
 
 		-------------- Cordes de garage --------------
 
@@ -180,10 +180,10 @@ Locales["fr"] = {
 		["element_title5"] = "CCTV",
 		["element_description5"] = "(Facultatif) Gérer les paramètres CCTV",
 		["element_title6"] = "Entrée",
-		["element_description6"] = "Définir l emplacement de l entrée de la propriété.",
+		["element_description6"] = "Définir l'emplacement de l'entrée de la propriété.",
 		["element_create_title"] = "Créer une propriété",
 		["element_create_desc_1"] = "Veuillez remplir toutes les entrées requises !",
-		["entry_set_title"] = "Ensemble d entrée.",
+		["entry_set_title"] = "Ensemble d'entrée.",
 		["entry_set_description"] = "Entrée : %s, %s, %s",
 		["interior_set_title"] = "Intérieur sélectionné.",
 		["interior_set_description"] = "Sélectionné : %s",
@@ -194,15 +194,15 @@ Locales["fr"] = {
 		["shell_description"] = "Intérieurs personnalisés, faits par vous",
 		["cctv_settings"] = "Paramètres CCTV",
 		["garage_settings"] = "Paramètres du garage",
-		["toggle_title"] = "Basculer l utilisation",
+		["toggle_title"] = "Basculer l'utilisation",
 		["toggle_description"] = "État actuel : %s",
-		["cctv_set_title"] = "Définir l angle CCTV",
-		["cctv_set_description"] = "Règle l angle de la caméra sur la direction de vos caméras",
+		["cctv_set_title"] = "Définir l'angle CCTV",
+		["cctv_set_description"] = "Définit l'angle de la caméra à la direction de vos caméras",
 		["back_description"] = "retour à la création de la propriété.",
 		["garage_set_title"] = "Définir la position du garage",
 		["garage_set_description"] = "Définir la position du garage de la propriété.",
 		["garage_textui"] = "Appuyez sur ~b~[E]~s~ pour définir la position",
-		["cctv_textui_1"] = "Appuyez sur ~b~[E]~s~ pour régler l angle",
+		["cctv_textui_1"] = "Appuyez sur ~b~[E]~s~ pour régler l'angle",
 		["cctv_textui_2"] = "Appuyez sur ~b~[E]~s~ pour définir la rotation maximale à droite",
 		["cctv_textui_3"] = "Appuyez sur ~b~[E]~s~ pour définir la rotation maximale à gauche",
 		["create_success"] = "Propriété créée !",
@@ -213,6 +213,6 @@ Locales["fr"] = {
 		["server_shutdown"] = "Arrêt du serveur",
 		["manual_save"] = "Enregistrement manuel (demandé par %s)",
 		["resource_stop"] = "Arrêt de la ressource",
-		["force_save"] = "Forcer l enregistrement (demandé par %s)",
-		["interval_saving"] = "Enregistrement d intervalle"
+		["force_save"] = "Forcer l'enregistrement (demandé par %s)",
+		["interval_saving"] = "Enregistrement d'intervalle"
 	}
