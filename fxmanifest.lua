@@ -21,7 +21,7 @@ game 'gta5'
 lua54 'yes'
 
 author 'ESX-Framework'
-description 'Official ESX-Legacy Property System'
+description 'Allows players to buy/sell houses, aswell as furnish them'
 version '2.0'
 legacyversion '1.9.1'
 
