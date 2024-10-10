@@ -248,7 +248,7 @@ ESX.RegisterServerCallback("esx_property:buyFurniture", function(source, cb, Pro
       TriggerClientEvent("esx_property:syncFurniture", -1, PropertyId, Properties[PropertyId].furniture)
     else
       cb(false)
-      ESX.ShowNotification(TranslateCap("furni_cannot_afford"))
+      xPlayer.showNotification(TranslateCap("furni_cannot_afford"))
     end
   else
     cb(false)
